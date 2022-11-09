@@ -289,6 +289,10 @@ class QueueManager(object):
         Counts exposures from the start of the month and equalizes any excess
         over NIGHTS_TO_REDISTRIBUTE or the number of nights to the end of 
         the month, whichever is less."""
+
+        # if no program, raise error
+        if len(self.observing_programs) == 0:
+            raise QueueEmptyError
         
         obs_count_by_subprogram_all = obs_log.count_equivalent_obs_by_subprogram(
                 mjd_range = [mjd_start, mjd_stop])

@@ -12,6 +12,7 @@ from .magnitudes import *
 from .simulate import *
 from .utils import *
 import logging
+
 set()
 
 __version__ = "0.0.2dev"

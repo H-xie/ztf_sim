@@ -13,16 +13,16 @@ class ObservingProgram(object):
 
     def __init__(self, program_id, subprogram_name, program_pi,
                  program_observing_time_fraction, subprogram_fraction,
-                 field_ids, filter_ids, internight_gap, 
+                 field_ids, filter_ids, internight_gap,
                  intranight_gap, n_visits_per_night,
-                 exposure_time = EXPOSURE_TIME,
+                 exposure_time=EXPOSURE_TIME,
                  nobs_range=None,
-                 filter_choice='rotate', 
+                 filter_choice='rotate',
                  active_months='all',
                  field_selection_function=None):
 
         assert ((field_ids is None) or (field_selection_function is None))
-        assert not((field_ids is None) and (field_selection_function is None))
+        assert not ((field_ids is None) and (field_selection_function is None))
 
         self.logger = logging.getLogger(__name__)
 
@@ -37,9 +37,9 @@ class ObservingProgram(object):
         self.internight_gap = internight_gap
         self.intranight_gap = intranight_gap
         self.n_visits_per_night = n_visits_per_night
-        self.exposure_time = exposure_time # a Quantity
+        self.exposure_time = exposure_time  # a Quantity
 
-        self.nobs_range = nobs_range 
+        self.nobs_range = nobs_range
         self.filter_choice = filter_choice
         if active_months != 'all':
             # allow scalar or list input
@@ -49,9 +49,9 @@ class ObservingProgram(object):
 
         self.field_selection_function = field_selection_function
 
-    def assign_nightly_requests(self, time, fields, obs_log, 
-            other_program_fields,
-            block_programs=False, **kwargs):
+    def assign_nightly_requests(self, time, fields, obs_log,
+                                other_program_fields,
+                                block_programs=False, **kwargs):
 
         # filters are given in filter_ids:
         # either a set of filters, or a fixed sequence
@@ -65,8 +65,7 @@ class ObservingProgram(object):
         if self.active_months != 'all':
             if time.to_datetime().month not in self.active_months:
                 return []
-        
-        
+
         # compute nightly altaz blocks and observability windows
         fields.compute_blocks(time)
         fields.compute_observability(time)
@@ -85,26 +84,29 @@ class ObservingProgram(object):
 
         # minimum time to observe N visits
         obs_field_ids = fields.select_field_ids(observable_hours_range=
-            [(self.n_visits_per_night*TIME_BLOCK_SIZE).to(u.hour).value, 24.])
+                                                [(self.n_visits_per_night * TIME_BLOCK_SIZE).to(u.hour).value, 24.])
 
         # if needed, compute the OP fields on a nightly basis
         if self.field_selection_function is not None:
             try:
                 selection_function = globals()[self.field_selection_function]
                 field_ids = selection_function(time, obs_log, other_program_fields, fields)
-                self.logger.info(f'Program ID {self.program_id}, subprogram {self.subprogram_name}: selected {len(field_ids)} fields')
+                self.logger.info(
+                    f'Program ID {self.program_id}, subprogram {self.subprogram_name}: selected {len(field_ids)} fields')
                 self.logger.debug(f'    {field_ids}')
             except Exception as e:
-                #raise(e) # needed to debug filter_selection_functions
+                # raise(e) # needed to debug filter_selection_functions
                 self.logger.exception(e)
-                self.logger.warning(f'Error in generating nightly field list for Program ID {self.program_id}, subprogram {self.subprogram_name}, returning zero fields!')  
+                self.logger.warning(
+                    f'Error in generating nightly field list for Program ID {self.program_id}, subprogram {self.subprogram_name}, returning zero fields!')
                 return []
         else:
             field_ids = self.field_ids
 
         # now form the intersection of observable fields and the OP fields
         pool_ids = obs_field_ids.intersection(field_ids)
-        self.logger.debug(f'Program ID {self.program_id}, subprogram {self.subprogram_name}: {len(pool_ids)} fields observable')
+        self.logger.debug(
+            f'Program ID {self.program_id}, subprogram {self.subprogram_name}: {len(pool_ids)} fields observable')
 
         # get the times they were last observed:
         # (note that fields *never* observed will not be included)
@@ -112,12 +114,12 @@ class ObservingProgram(object):
         # at the start of the night, exclude observations taken tonight
         # this lets us restart the scheduler without breaking things
         last_observed_times = obs_log.select_last_observed_time_by_field(
-                field_ids = pool_ids,
-                filter_ids = filter_ids_tonight,
-                program_ids = [self.program_id],
-                subprogram_names = [self.subprogram_name],
-                # arbitrary early date; start of night tonight
-                mjd_range = [Time('2001-01-01').mjd,np.floor(time.mjd)])
+            field_ids=pool_ids,
+            filter_ids=filter_ids_tonight,
+            program_ids=[self.program_id],
+            subprogram_names=[self.subprogram_name],
+            # arbitrary early date; start of night tonight
+            mjd_range=[Time('2001-01-01').mjd, np.floor(time.mjd)])
 
         # we want an object observed at the end of the night N days ago
         # to be observed at the start of the night now.
@@ -153,8 +155,8 @@ class ObservingProgram(object):
             if 'filter_ids' not in self.nobs_range:
                 filter_ids = None
             else:
-                filter_ids = self.nobs_range['filter_ids'] 
-                
+                filter_ids = self.nobs_range['filter_ids']
+
             if 'mjd_range' not in self.nobs_range:
                 mjd_range = None
             else:
@@ -162,28 +164,27 @@ class ObservingProgram(object):
 
             assert 'min_obs' in self.nobs_range
             assert 'max_obs' in self.nobs_range
-                
-            nobs = obs_log.select_n_obs_by_field(filter_ids = filter_ids,
-                    program_ids = program_ids, 
-                    subprogram_names = subprogram_names,
-                    mjd_range = mjd_range)
-            
+
+            nobs = obs_log.select_n_obs_by_field(filter_ids=filter_ids,
+                                                 program_ids=program_ids,
+                                                 subprogram_names=subprogram_names,
+                                                 mjd_range=mjd_range)
+
             # function above only returns fields that have been observed at
             # least once.  use the intersection if min_obs > 0:
-            w = ((nobs >= self.nobs_range['min_obs']) & 
-                    (nobs <= self.nobs_range['max_obs']))
+            w = ((nobs >= self.nobs_range['min_obs']) &
+                 (nobs <= self.nobs_range['max_obs']))
             if self.nobs_range['min_obs'] > 0:
                 nobs_inrange = nobs.loc[w]
-                request_fields = request_fields.join(nobs_inrange,how='inner')
+                request_fields = request_fields.join(nobs_inrange, how='inner')
             else:
                 # drop rows out of range (which here means only those with 
                 # nobs > max_obs
                 nobs_outofrange = nobs.loc[~w]
                 # find fields that are in request_fields but out of range
-                nobs_outofrange = request_fields.join(nobs_outofrange,how='inner')
+                nobs_outofrange = request_fields.join(nobs_outofrange, how='inner')
                 # now drop them
                 request_fields = request_fields.drop(nobs_outofrange.index)
-            
 
         # construct request sets: list of inputs to RequestPool.add_requests
         # scalar everything except field_ids
@@ -192,10 +193,11 @@ class ObservingProgram(object):
             filter_sequence = [filter_ids_tonight[0] for i in
                                range(self.n_visits_per_night)]
         elif self.filter_choice == 'sequence':
-            assert(len(self.filter_ids) == self.n_visits_per_night)
+            assert (len(self.filter_ids) == self.n_visits_per_night)
             filter_sequence = self.filter_ids.copy()
 
-        self.logger.debug(f'Program ID {self.program_id}, subprogram {self.subprogram_name}: {len(request_fields.index.values)} fields requested')
+        self.logger.debug(
+            f'Program ID {self.program_id}, subprogram {self.subprogram_name}: {len(request_fields.index.values)} fields requested')
 
         request_set = []
         request_set.append(

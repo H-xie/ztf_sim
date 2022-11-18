@@ -5,8 +5,6 @@ from scipy.interpolate import interp1d
 from .constants import BASE_DIR, FILTER_ID_TO_NAME, PIXEL_SCALE
 
 
-
-
 def interp_R20_airmass(filter_id=2):
     """Returns function to interpolate electrons/sec of a 20th mag source as a function of altitude."""
     R20_file = BASE_DIR + '../data/R20_absorbed_ZTF{}.txt'.format(
@@ -15,6 +13,7 @@ def interp_R20_airmass(filter_id=2):
     alt = data[:, 0]
     R20 = data[:, 1]
     return interp1d(alt, R20)
+
 
 R20_interp_alt = {1: interp_R20_airmass(filter_id=1),
                   2: interp_R20_airmass(filter_id=2),
@@ -29,7 +28,7 @@ def limiting_mag(exposure_time, seeing_fwhm, sky_brightness,
     Rsky = sky_electrons_per_pixel(sky_brightness, filter_id=filter_id)
 
     # sky limited case:
-    Rstar = np.sqrt(SNR**2. * npix * Rsky / exposure_time)
+    Rstar = np.sqrt(SNR ** 2. * npix * Rsky / exposure_time)
 
     R20 = Rstar20(filter_id=filter_id, altitude=altitude,
                   aperture_cut=True, absorb=True)
@@ -82,7 +81,7 @@ def AB_to_Rstar(source_mag, filter_id=2, altitude=90.,
     R20 = Rstar20(filter_id=filter_id, altitude=altitude,
                   aperture_cut=True, absorb=True)
 
-    return R20 * 10**(0.4 * (20. - source_mag))
+    return R20 * 10 ** (0.4 * (20. - source_mag))
 
 
 def n_pixels(seeing_fwhm):
@@ -95,7 +94,7 @@ def n_pixels(seeing_fwhm):
         seeing in arcsec
         """
 
-    npix_extract = np.pi * (0.673 * seeing_fwhm / PIXEL_SCALE)**2.
+    npix_extract = np.pi * (0.673 * seeing_fwhm / PIXEL_SCALE) ** 2.
 
     # don't return fractional pixels
     npix_extract = np.atleast_1d(np.round(npix_extract))
@@ -109,7 +108,7 @@ def n_pixels(seeing_fwhm):
 def sky_electrons_per_pixel(mag_per_sq_arcsec, filter_id=2):
     # returns electrons per pixel per second
     # area of one pixel in arcsec^2.
-    pixarea = PIXEL_SCALE**2.
+    pixarea = PIXEL_SCALE ** 2.
     mag_per_pix = mag_per_sq_arcsec - 2.5 * np.log10(pixarea)
     # could store R20 = R(20) and do R(m) = R(20) * 10**(0.4 * (20-m))
     return AB_to_Rstar(mag_per_pix, filter_id=filter_id, altitude=90.,

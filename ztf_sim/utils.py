@@ -9,30 +9,25 @@ import astroplan
 from sqlalchemy import create_engine
 from datetime import datetime
 from .constants import BASE_DIR, P48_loc, P48_Observer, TIME_BLOCK_SIZE
-from .constants import EXPOSURE_TIME, MAX_AIRMASS 
+from .constants import EXPOSURE_TIME, MAX_AIRMASS
 from .magnitudes import limiting_mag
-
-
-
 
 
 def df_write_to_sqlite(df, dbname, tablename=None,
                        directory='data', **kwargs):
-
     if tablename is None:
         tablename = dbname
     engine = create_engine('sqlite:///{}../{}/{}.db'.format(BASE_DIR,
-        directory, dbname))
+                                                            directory, dbname))
     df.to_sql(tablename, engine, if_exists='replace', **kwargs)
 
 
 def df_read_from_sqlite(dbname, tablename=None,
                         directory='data', **kwargs):
-
     if tablename is None:
         tablename = dbname
     engine = create_engine('sqlite:///{}../{}/{}.db'.format(BASE_DIR,
-        directory, dbname))
+                                                            directory, dbname))
     df = pd.read_sql(tablename, engine, **kwargs)
 
     return df
@@ -75,14 +70,18 @@ def previous_12deg_evening_twilight(time):
 def next_12deg_evening_twilight(time):
     return P48_Observer.twilight_evening_nautical(time, which='next')
 
+
 def next_12deg_morning_twilight(time):
     return P48_Observer.twilight_morning_nautical(time, which='next')
+
 
 def next_18deg_morning_twilight(time):
     return P48_Observer.twilight_morning_astronomical(time, which='next')
 
+
 def previous_18deg_evening_twilight(time):
     return P48_Observer.twilight_evening_astronomical(time, which='previous')
+
 
 def next_18deg_evening_twilight(time):
     return P48_Observer.twilight_evening_astronomical(time, which='next')
@@ -94,6 +93,7 @@ def skycoord_to_altaz(skycoord, time):
 
 def airmass_to_zenith_angle(airmass):
     return np.degrees(np.arccos(1. / airmass)) * u.deg
+
 
 # cf altaz.secz.value
 
@@ -110,6 +110,7 @@ def altitude_to_airmass(altitude):
     za = 90. - altitude  # if I make 90 a Quantity I have DataFrame troubles
     return zenith_angle_to_airmass(za)
 
+
 def maximum_altitude(dec, lat=P48_loc.lat.degree):
     """Compute the altitude of a source with declination dec as it transits the
     meridian.
@@ -119,7 +120,7 @@ def maximum_altitude(dec, lat=P48_loc.lat.degree):
     px = 90 - dec
     pz = 90 - lat
 
-    results = dec*0.
+    results = dec * 0.
 
     w = (px >= pz)
 
@@ -131,18 +132,17 @@ def maximum_altitude(dec, lat=P48_loc.lat.degree):
     return results
 
 
-
 def seeing_at_zenith(pointing_seeing, altitude):
     """Convert seeing at current pointing to zenith by multiplying by X^-3/5"""
     X = altitude_to_airmass(altitude)
-    return pointing_seeing * (X**(-3. / 5.))
+    return pointing_seeing * (X ** (-3. / 5.))
 
 
 def seeing_at_pointing(zenith_seeing, altitude):
     """Convert zenith seeing to seeing at current altitude by multiplying by
     X^3/5"""
     X = altitude_to_airmass(altitude)
-    return zenith_seeing * (X**(3. / 5.))
+    return zenith_seeing * (X ** (3. / 5.))
 
 
 def approx_hours_of_darkness(time, axis=coord.Angle(23.44 * u.degree),
@@ -165,7 +165,7 @@ def approx_hours_of_darkness(time, axis=coord.Angle(23.44 * u.degree),
                                               np.cos(doy * np.pi / 182.625))
     i = np.tan(twilight.radian) / np.cos(latitude.radian)
     n = m + i
-    #n = np.max([0, np.min([n, 2])])
+    # n = np.max([0, np.min([n, 2])])
     # vectorize
     n[n > 2] = 2
     n[n < 0] = 0
@@ -255,11 +255,11 @@ def nightly_blocks(time, time_block_size=TIME_BLOCK_SIZE):
     evening_twilight = next_12deg_evening_twilight(time)
     morning_twilight = next_12deg_morning_twilight(time)
 
-    if ((evening_twilight > morning_twilight) 
-        or (evening_twilight.value < 0)
-        # some versions of astroplan+astropy seem to return masked arrays
-        # instead
-        or (type(evening_twilight.value) == np.ma.core.MaskedArray)):
+    if ((evening_twilight > morning_twilight)
+            or (evening_twilight.value < 0)
+            # some versions of astroplan+astropy seem to return masked arrays
+            # instead
+            or (type(evening_twilight.value) == np.ma.core.MaskedArray)):
         # the night has already started, find previous twilight
         evening_twilight = previous_12deg_evening_twilight(time)
 
@@ -273,6 +273,7 @@ def nightly_blocks(time, time_block_size=TIME_BLOCK_SIZE):
 
     return blocks, times
 
+
 def block_use_fraction(block_index, obs_start_time, obs_end_time):
     """Given a block index and Times specifying the start and end of an observation window, return the fraction of the block covered by the window.
     
@@ -280,9 +281,9 @@ def block_use_fraction(block_index, obs_start_time, obs_end_time):
 
     # obs_start_time is just providing the year here
     block_tstart = block_index_to_time(block_index, obs_start_time,
-            where='start')[0]
+                                       where='start')[0]
     block_tend = block_index_to_time(block_index, obs_end_time,
-            where='end')[0]
+                                     where='end')[0]
 
     # block completely filled
     if (obs_start_time <= block_tstart) and (obs_end_time >= block_tend):
@@ -305,9 +306,6 @@ def block_use_fraction(block_index, obs_start_time, obs_end_time):
 
     # this should never be reached
     raise AssertionError('Block use calculation is inconsistent')
-
-
-
 
 
 def scalar_len(x):
@@ -333,7 +331,7 @@ def compute_limiting_mag(df, time, sky, filter_id=None):
     moon = coord.get_moon(time, location=P48_loc)
     moon_altaz = skycoord_to_altaz(moon, time)
     df.loc[:, 'moonillf'] = astroplan.moon.moon_illumination(time)
-    
+
     # WORKING AROUND BUG in moon distance!!!!  171110
     df.loc[:, 'moon_dist'] = moon.separation(sc).to(u.deg).value
     df.loc[:, 'moonalt'] = moon_altaz.alt.to(u.deg).value
@@ -345,41 +343,41 @@ def compute_limiting_mag(df, time, sky, filter_id=None):
 
     # compute sky brightness
     # only have values for reasonable altitudes (set by R20_absorbed...)
-    wup = df['altitude'] >= airmass_to_altitude(MAX_AIRMASS) 
+    wup = df['altitude'] >= airmass_to_altitude(MAX_AIRMASS)
     df.loc[wup, 'sky_brightness'] = sky.predict(df[wup])
 
     # compute seeing at each pointing
-    df.loc[wup, 'seeing'] = seeing_at_pointing(2.0*u.arcsec, 
-        df.loc[wup,'altitude'])
+    df.loc[wup, 'seeing'] = seeing_at_pointing(2.0 * u.arcsec,
+                                               df.loc[wup, 'altitude'])
 
-    df.loc[wup, 'limiting_mag'] = limiting_mag(EXPOSURE_TIME, 
-        df.loc[wup, 'seeing'],
-        df.loc[wup, 'sky_brightness'],
-        filter_id = df.loc[wup,'filter_id'],
-        altitude = df.loc[wup,'altitude'], SNR=5.)
+    df.loc[wup, 'limiting_mag'] = limiting_mag(EXPOSURE_TIME,
+                                               df.loc[wup, 'seeing'],
+                                               df.loc[wup, 'sky_brightness'],
+                                               filter_id=df.loc[wup, 'filter_id'],
+                                               altitude=df.loc[wup, 'altitude'], SNR=5.)
 
     # renormalize limiting mags to the R-band range so we maintain 
     # the causal structure with airmass, etc. but can get i-band scheduled
-    
+
     # bright time limiting mags (from PTF-trained model--see 170930 notes
     # and plot_sky_brightness_model.ipynb)
     mlim_bright_g = 19.9
     mlim_bright_r = 20.1
     mlim_bright_i = 19.5
-    dm_g = (21.9-19.9)
-    dm_r = (21.5-20.1)
-    dm_i = (20.9-19.5)
+    dm_g = (21.9 - 19.9)
+    dm_r = (21.5 - 20.1)
+    dm_i = (20.9 - 19.5)
 
     wg = df['filter_id'] == 1
     if np.sum(wg):
-        df.loc[wg,'limiting_mag'] = \
-            (df.loc[wg,'limiting_mag'] - mlim_bright_g) * dm_r/dm_g \
+        df.loc[wg, 'limiting_mag'] = \
+            (df.loc[wg, 'limiting_mag'] - mlim_bright_g) * dm_r / dm_g \
             + mlim_bright_r
 
     wi = df['filter_id'] == 3
     if np.sum(wi):
-        df.loc[wi,'limiting_mag'] = \
-            (df.loc[wi,'limiting_mag'] - mlim_bright_i) * dm_r/dm_i \
+        df.loc[wi, 'limiting_mag'] = \
+            (df.loc[wi, 'limiting_mag'] - mlim_bright_i) * dm_r / dm_i \
             + mlim_bright_r
 
     # assign a very bright limiting mag to the fields that are down 
@@ -396,20 +394,20 @@ def compute_limiting_mag(df, time, sky, filter_id=None):
 
     # time is provided at the block midpoint
 
-    ha_vals = RA_to_HA(df['ra'].values*u.degree, 
-            time - TIME_BLOCK_SIZE/2.)
+    ha_vals = RA_to_HA(df['ra'].values * u.degree,
+                       time - TIME_BLOCK_SIZE / 2.)
     # for limits below, need ha-180-180
-    ha_vals = ha_vals.wrap_at(180.*u.degree)
+    ha_vals = ha_vals.wrap_at(180. * u.degree)
     ha = pd.Series(ha_vals.to(u.degree), index=df.index, name='ha')
 
-    ha_vals_end = RA_to_HA(df['ra'].values*u.degree, 
-            time + TIME_BLOCK_SIZE/2.)
+    ha_vals_end = RA_to_HA(df['ra'].values * u.degree,
+                           time + TIME_BLOCK_SIZE / 2.)
     # for limits below, need ha-180-180
-    ha_vals_end = ha_vals_end.wrap_at(180.*u.degree)
+    ha_vals_end = ha_vals_end.wrap_at(180. * u.degree)
     ha_end = pd.Series(ha_vals_end.to(u.degree), index=df.index, name='ha')
 
     # lock out TCS limits
-    
+
     # Reed limits |HA| to < 5.95 hours (most relevant for circumpolar
     # fields not hit by the airmass cut)
     whalimit = np.abs(ha) >= (5.95 * u.hourangle).to(u.degree).value
@@ -436,6 +434,7 @@ def compute_limiting_mag(df, time, sky, filter_id=None):
     df.loc[w4, 'limiting_mag'] = -99
 
     return df['limiting_mag'], df['sky_brightness']
+
 
 def _ptf_to_sqlite():
     """Convert observation history SQL dump from IPAC db to OpSim db format.
@@ -506,8 +505,8 @@ def _ptf_to_sqlite():
     df['ditheredRA'] = 0.
     df['ditheredDec'] = 0.
 
-    df['filter'] = df['filter'].map({1:'g',2:'r',4:'i'})
-    df.sort_values('expMJD',inplace=True)
+    df['filter'] = df['filter'].map({1: 'g', 2: 'r', 4: 'i'})
+    df.sort_values('expMJD', inplace=True)
 
     # for some reason the night values from the db are not monotonic in MJD
     # make my own versions
@@ -529,4 +528,4 @@ def export_pointings_to_surace(dbname, **kwargs):
 
     df[['ra', 'dec', 'fieldID',
         'filter', 'imagetype', 'expMJD']].to_csv('../sims/{}.txt'.format(
-            dbname), sep=' ', header=False, index=False)
+        dbname), sep=' ', header=False, index=False)

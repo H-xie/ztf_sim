@@ -15,9 +15,9 @@ from .configuration import SchedulerConfiguration, QueueConfiguration
 from .constants import BASE_DIR, P48_loc
 from .utils import block_index
 
-
 # check aggressively for setting with copy
 import pandas as pd
+
 pd.options.mode.chained_assignment = 'raise'  # default='warn'
 
 logger = logging.getLogger()
@@ -26,13 +26,13 @@ logging.getLogger("transitions").setLevel(logging.WARNING)
 logging.getLogger("gurobipy").setLevel(logging.INFO)
 logging.getLogger("ztf_sim.field_selection_functions").setLevel(logging.INFO)
 
-def simulate(scheduler_config_file, sim_config_file,
-        scheduler_config_path = BASE_DIR + '../../ztf_survey_configuration/',
-        sim_config_path = BASE_DIR+'../config/',
-        output_path = BASE_DIR+'../sims/',
-        profile=False, raise_queue_empty=False, fallback=True, 
-        time_limit = 30*u.second):
 
+def simulate(scheduler_config_file, sim_config_file,
+             scheduler_config_path=BASE_DIR + '../../ztf_survey_configuration/',
+             sim_config_path=BASE_DIR + '../config/',
+             output_path=BASE_DIR + '../sims/',
+             profile=False, raise_queue_empty=False, fallback=True,
+             time_limit=30 * u.second):
     if profile:
         try:
             from pyinstrument import Profiler
@@ -59,9 +59,9 @@ def simulate(scheduler_config_file, sim_config_file,
 
     # set up Scheduler
     scheduler_config_file_fullpath = \
-            os.path.join(scheduler_config_path, scheduler_config_file)
+        os.path.join(scheduler_config_path, scheduler_config_file)
     scheduler = Scheduler(scheduler_config_file_fullpath,
-            sim_config_file_fullpath, output_path = output_path)
+                          sim_config_file_fullpath, output_path=output_path)
     run_name = scheduler.scheduler_config.config['run_name']
 
     if profile:
@@ -79,7 +79,7 @@ def simulate(scheduler_config_file, sim_config_file,
         historical_observability_year=weather_year)
 
     # logging.  wipe out existing log.
-    logfile=os.path.join(output_path,f'{run_name}_log.txt')
+    logfile = os.path.join(output_path, f'{run_name}_log.txt')
     fh = logging.FileHandler(logfile, mode='w')
     fh.setLevel(logging.INFO)
     logger.addHandler(fh)
@@ -92,25 +92,25 @@ def simulate(scheduler_config_file, sim_config_file,
         # check if it is a new night and reload queue with new requests
         if np.floor(tel.current_time.mjd) > current_night_mjd:
             # use the state machine to allow us to skip weathered out nights
-            #if tel.check_if_ready():
+            # if tel.check_if_ready():
             scheduler.obs_log.prev_obs = None
 
             block_use = scheduler.find_block_use_tonight(
-                              tel.current_time)
+                tel.current_time)
             timed_obs_count = scheduler.count_timed_observations_tonight()
 
             # clobber old missed_obs queue with an empty one
             scheduler.add_queue('missed_obs',
-                    GreedyQueueManager('missed_obs',
-                        QueueConfiguration(BASE_DIR+'../sims/missed_obs.json')),
-                    clobber=True)
+                                GreedyQueueManager('missed_obs',
+                                                   QueueConfiguration(BASE_DIR + '../sims/missed_obs.json')),
+                                clobber=True)
 
             scheduler.queues['default'].missed_obs_queue = scheduler.queues['missed_obs']
 
             scheduler.queues['default'].assign_nightly_requests(
-                    tel.current_state_dict(),
-                    scheduler.obs_log, block_use = block_use,
-                    timed_obs_count = timed_obs_count, time_limit = time_limit)
+                tel.current_state_dict(),
+                scheduler.obs_log, block_use=block_use,
+                timed_obs_count=timed_obs_count, time_limit=time_limit)
             current_night_mjd = np.floor(tel.current_time.mjd)
             # log pool stats
             logger.info(calc_pool_stats(
@@ -119,33 +119,33 @@ def simulate(scheduler_config_file, sim_config_file,
         if tel.check_if_ready():
             current_state = tel.current_state_dict()
 
-            #scheduler.check_for_TOO_queue_and_switch(current_state['current_time'])
+            # scheduler.check_for_TOO_queue_and_switch(current_state['current_time'])
             scheduler.check_for_timed_queue_and_switch(current_state['current_time'])
 
             # get coords
             try:
-                next_obs = scheduler.Q.next_obs(current_state, 
-                        scheduler.obs_log)
-                assert(next_obs['request_id'] in scheduler.Q.queue.index)
+                next_obs = scheduler.Q.next_obs(current_state,
+                                                scheduler.obs_log)
+                assert (next_obs['request_id'] in scheduler.Q.queue.index)
             except QueueEmptyError:
                 if scheduler.Q.queue_name != 'default':
-                    logger.info(f"Queue {scheduler.Q.queue_name} empty! Switching to default queue.") 
+                    logger.info(f"Queue {scheduler.Q.queue_name} empty! Switching to default queue.")
                     scheduler.set_queue('default')
                     try:
-                        next_obs = scheduler.Q.next_obs(current_state, 
-                                scheduler.obs_log)
-                        assert(next_obs['request_id'] in scheduler.Q.queue.index)
+                        next_obs = scheduler.Q.next_obs(current_state,
+                                                        scheduler.obs_log)
+                        assert (next_obs['request_id'] in scheduler.Q.queue.index)
                     except QueueEmptyError:
 
                         logger.info("Default queue empty!  Trying missed_obs queue...")
                         try:
                             next_obs = scheduler.queues['missed_obs'].next_obs(
-                                    current_state, scheduler.obs_log)
+                                current_state, scheduler.obs_log)
                         except QueueEmptyError:
                             logger.info("missed_obs queue empty!  Trying fallback queue...")
                             if fallback and 'fallback' in scheduler.queues:
                                 next_obs = scheduler.queues['fallback'].next_obs(
-                                        current_state, scheduler.obs_log)
+                                    current_state, scheduler.obs_log)
                             else:
                                 logger.info("No fallback queue defined!")
                                 raise QueueEmptyError
@@ -154,17 +154,17 @@ def simulate(scheduler_config_file, sim_config_file,
                     logger.info("Default queue empty!  Trying missed_obs queue...")
                     try:
                         next_obs = scheduler.queues['missed_obs'].next_obs(
-                                current_state, scheduler.obs_log)
+                            current_state, scheduler.obs_log)
                     except QueueEmptyError:
                         if fallback and 'fallback' in scheduler.queues:
                             logger.info("Default queue empty!  Trying fallback queue...")
                             next_obs = scheduler.queues['fallback'].next_obs(
-                                        current_state, scheduler.obs_log)
+                                current_state, scheduler.obs_log)
                         elif not raise_queue_empty:
-                                logger.info("Queue empty!  Waiting...")
-                                scheduler.obs_log.prev_obs = None
-                                tel.wait()
-                                continue
+                            logger.info("Queue empty!  Waiting...")
+                            scheduler.obs_log.prev_obs = None
+                            tel.wait()
+                            continue
                         else:
                             logger.info(calc_queue_stats(
                                 scheduler.Q.queue, current_state,
@@ -188,7 +188,7 @@ def simulate(scheduler_config_file, sim_config_file,
                 tel.set_cant_observe()
                 # "missed history": http://ops2.lsst.org/docs/current/architecture.html#output-tables
                 logger.info("Failure slewing to {}, {}!  Waiting...".format
-                                (next_obs['target_ra'] * u.deg, next_obs['target_dec'] * u.deg))
+                            (next_obs['target_ra'] * u.deg, next_obs['target_dec'] * u.deg))
                 scheduler.obs_log.prev_obs = None
                 tel.wait()
                 continue
@@ -207,8 +207,8 @@ def simulate(scheduler_config_file, sim_config_file,
                 scheduler.obs_log.log_pointing(current_state, next_obs)
                 # b) remove completed request_id from the pool and the queue
                 logger.info(next_obs)
-                assert(next_obs['request_id'] in scheduler.queues[next_obs['queue_name']].queue.index)
-                scheduler.queues[next_obs['queue_name']].remove_requests(next_obs['request_id']) 
+                assert (next_obs['request_id'] in scheduler.queues[next_obs['queue_name']].queue.index)
+                scheduler.queues[next_obs['queue_name']].remove_requests(next_obs['request_id'])
         else:
             scheduler.obs_log.prev_obs = None
             tel.set_cant_observe()
@@ -217,6 +217,5 @@ def simulate(scheduler_config_file, sim_config_file,
     if profile:
         profiler.stop()
         print(profiler.output_text(str=True, color=True))
-        with open(os.path.join(output_path,f'{run_name}_profile.txt'), 'w') as f:
+        with open(os.path.join(output_path, f'{run_name}_profile.txt'), 'w') as f:
             f.write(profiler.output_text())
-

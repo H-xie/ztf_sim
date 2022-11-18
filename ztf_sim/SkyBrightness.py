@@ -29,7 +29,7 @@ class SkyBrightness(object):
         filterkey: 1, 2, 3"""
 
         filter_ids = df['filter_id'].unique()
-        assert(np.sum(filter_ids > 3) == 0)
+        assert (np.sum(filter_ids > 3) == 0)
 
         sky = pd.Series(np.nan, index=df.index, name='sky_brightness')
         wg = (df['filter_id'] == FILTER_NAME_TO_ID['g'])
@@ -56,7 +56,6 @@ class FakeSkyBrightness(object):
 
 
 def train_sky_model(filter_name='r', df=None):
-
     # PTF used 4 for i-band
     filterid_map = {'r': 2, 'g': 1, 'i': 4}
 
@@ -78,20 +77,20 @@ def train_sky_model(filter_name='r', df=None):
     # from sklearn, so skip it.
     mapper = DataFrameMapper([
         (['moonillf'], preprocessing.StandardScaler()),
-        (['moonalt'],   preprocessing.StandardScaler()),
+        (['moonalt'], preprocessing.StandardScaler()),
         (['moon_dist'], preprocessing.StandardScaler()),
-        (['azimuth'],  preprocessing.StandardScaler()),
+        (['azimuth'], preprocessing.StandardScaler()),
         (['altitude'], preprocessing.StandardScaler()),
-        (['sunalt'],   preprocessing.StandardScaler())])
-    #('filterkey',  None)])
+        (['sunalt'], preprocessing.StandardScaler())])
+    # ('filterkey',  None)])
 
     clf = pipeline.Pipeline([
         ('featurize', mapper),
         ('xgb', xgb.XGBRegressor())])
-    #('svr', svm.SVR(kernel='poly',degree=2))])
-    #('knr', neighbors.KNeighborsRegressor(n_neighbors=15, weights='distance', algorithm='auto'))])
-    #('lm', linear_model.BayesianRidge())])
-    #('rf', ensemble.RandomForestRegressor(n_jobs=-1))])
+    # ('svr', svm.SVR(kernel='poly',degree=2))])
+    # ('knr', neighbors.KNeighborsRegressor(n_neighbors=15, weights='distance', algorithm='auto'))])
+    # ('lm', linear_model.BayesianRidge())])
+    # ('rf', ensemble.RandomForestRegressor(n_jobs=-1))])
 
     clf.fit(X_train, y_train.values.reshape(-1, 1))
     print(clf.score(X_test, y_test.values.reshape(-1, 1)))

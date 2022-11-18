@@ -9,8 +9,7 @@ import astropy.units as u
 import astroplan
 
 BASE_DIR = os.path.dirname(os.path.abspath(inspect.getfile(
-                inspect.currentframe()))) + '/'
-
+    inspect.currentframe()))) + '/'
 
 P48_loc = coords.EarthLocation(lat=coords.Latitude('33d21m26.2s'),
                                lon=coords.Longitude('-116d51m35.5s'),
@@ -25,24 +24,24 @@ P48_Observer = astroplan.Observer(location=P48_loc)
 # Ha/Dec from Telescope Drive Performance Assessment v1.2; dome estimate from
 # Jeff Z. email, 9/27/17
 P48_slew_pars = {
-    'ha': {'coord': 'ra', 'accel': 0.4 * u.deg * u.second**(-2.),
-           'decel': 0.4 * u.deg * u.second**(-2.),
+    'ha': {'coord': 'ra', 'accel': 0.4 * u.deg * u.second ** (-2.),
+           'decel': 0.4 * u.deg * u.second ** (-2.),
            'vmax': 2.5 * u.deg / u.second},
-    'dec': {'coord': 'dec', 'accel': 0.5 * u.deg * u.second**(-2.),
-            'decel': 0.5 * u.deg * u.second**(-2.),
+    'dec': {'coord': 'dec', 'accel': 0.5 * u.deg * u.second ** (-2.),
+            'decel': 0.5 * u.deg * u.second ** (-2.),
             'vmax': 3.0 * u.deg / u.second},
-    'dome': {'coord': 'az', 'accel': 0.5 * u.deg * u.second**(-2.),
-             'decel': 0.5 * u.deg * u.second**(-2.),
+    'dome': {'coord': 'az', 'accel': 0.5 * u.deg * u.second ** (-2.),
+             'decel': 0.5 * u.deg * u.second ** (-2.),
              'vmax': 3. * u.deg / u.second}}
 P48_slew_pars_goal = {
-    'ha': {'coord': 'ra', 'accel': 0.50 * u.deg * u.second**(-2.),
-           'decel': 0.50 * u.deg * u.second**(-2.),
+    'ha': {'coord': 'ra', 'accel': 0.50 * u.deg * u.second ** (-2.),
+           'decel': 0.50 * u.deg * u.second ** (-2.),
            'vmax': 3.00 * u.deg / u.second},
-    'dec': {'coord': 'dec', 'accel': 0.5 * u.deg * u.second**(-2.),
-            'decel': 0.5 * u.deg * u.second**(-2.),
+    'dec': {'coord': 'dec', 'accel': 0.5 * u.deg * u.second ** (-2.),
+            'decel': 0.5 * u.deg * u.second ** (-2.),
             'vmax': 3.00 * u.deg / u.second},
-    'dome': {'coord': 'az', 'accel': 0.5 * u.deg * u.second**(-2.),
-             'decel': 0.5 * u.deg * u.second**(-2.),
+    'dome': {'coord': 'az', 'accel': 0.5 * u.deg * u.second ** (-2.),
+             'decel': 0.5 * u.deg * u.second ** (-2.),
              'vmax': 5. * u.deg / u.second}}
 # PTF configuration
 # P48_slew_pars = {
@@ -65,8 +64,8 @@ MAX_AIRMASS = 2.5
 
 TIME_BLOCK_SIZE = 30. * u.min
 
-PROGRAM_NAME_TO_ID = {'engineering': 0, 
-                      'MSIP':1, 'collaboration': 2, 'Caltech': 3}
+PROGRAM_NAME_TO_ID = {'engineering': 0,
+                      'MSIP': 1, 'collaboration': 2, 'Caltech': 3}
 PROGRAM_NAMES = list(PROGRAM_NAME_TO_ID.keys())
 PROGRAM_ID_TO_NAME = {v: k for k, v in list(PROGRAM_NAME_TO_ID.items())}
 PROGRAM_IDS = list(PROGRAM_ID_TO_NAME.keys())
@@ -95,4 +94,4 @@ def slew_time(axis, angle):
 
     wnonzero = slew_time > 0
     slew_time[wnonzero] += SETTLE_TIME
-    return slew_time 
+    return slew_time

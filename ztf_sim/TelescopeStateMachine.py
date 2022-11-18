@@ -10,6 +10,7 @@ from .utils import *
 from .constants import BASE_DIR, P48_loc, FILTER_IDS
 from .constants import READOUT_TIME, EXPOSURE_TIME, FILTER_CHANGE_TIME, slew_time
 
+
 class TelescopeStateMachine(Machine):
 
     def __init__(self, current_time=Time('2018-01-01', scale='utc',
@@ -29,24 +30,24 @@ class TelescopeStateMachine(Machine):
 
         transitions = [
             {'trigger': 'start_slew', 'source': 'ready', 'dest': 'slewing',
-                'after': ['process_slew', 'stop_slew'],
-                'conditions': 'slew_allowed'},
+             'after': ['process_slew', 'stop_slew'],
+             'conditions': 'slew_allowed'},
             {'trigger': 'stop_slew', 'source': 'slewing', 'dest': 'ready'},
             # for now do not require filter changes to include a slew....
             {'trigger': 'start_filter_change', 'source': 'ready',
-                'dest': 'changing_filters',
-                'after': ['process_filter_change', 'stop_filter_change']},
+             'dest': 'changing_filters',
+             'after': ['process_filter_change', 'stop_filter_change']},
             {'trigger': 'stop_filter_change', 'source': 'changing_filters',
-                'dest': 'ready'},
+             'dest': 'ready'},
             {'trigger': 'start_exposing', 'source': 'ready', 'dest': 'exposing',
-                'after': ['process_exposure', 'stop_exposing']},
+             'after': ['process_exposure', 'stop_exposing']},
             {'trigger': 'stop_exposing', 'source': 'exposing', 'dest': 'ready'},
             # I would like to automatically set the cant_observe state from
             # start_exposing, but that doesn't seem to work.
             {'trigger': 'check_if_ready', 'source': ['ready', 'cant_observe'],
-                'dest': 'ready', 'conditions': 'can_observe'},
+             'dest': 'ready', 'conditions': 'can_observe'},
             {'trigger': 'set_cant_observe', 'source': '*',
-                'dest': 'cant_observe'}
+             'dest': 'cant_observe'}
         ]
 
         # Initialize the state machine.  syntax from
@@ -69,7 +70,7 @@ class TelescopeStateMachine(Machine):
         self.observability = PTFObservabilityDB()
 
         self.logger = logging.getLogger(__name__)
-        #self.logger = logging.getLogger('transitions')
+        # self.logger = logging.getLogger('transitions')
 
     def current_state_dict(self):
         """Return current state parameters in a dictionary"""
@@ -90,7 +91,7 @@ class TelescopeStateMachine(Machine):
         if coord.get_sun(self.current_time).transform_to(
                 coord.AltAz(obstime=self.current_time,
                             location=P48_loc)).alt.is_within_bounds(
-                upper=-12. * u.deg):
+            upper=-12. * u.deg):
             if self.historical_observability_year is None:
                 # don't use weather, just use 12 degree twilight
                 return True
@@ -101,7 +102,7 @@ class TelescopeStateMachine(Machine):
                     # optimization: fast-forward to start of next block
                     block_now = block_index(self.current_time)
                     block_end_time = block_index_to_time(block_now,
-                        self.current_time, where='end')[0]
+                                                         self.current_time, where='end')[0]
                     self.logger.info('Weathered out.  Fast forwarding to end of this block: {}'.format(
                         block_end_time.iso))
                     self.current_time = block_end_time
@@ -120,7 +121,7 @@ class TelescopeStateMachine(Machine):
         """Check that slew is within allowed limits"""
 
         if (skycoord_to_altaz(target_skycoord, self.current_time).alt
-            < (10. * u.deg)):
+                < (10. * u.deg)):
             return False
 
         if ((target_skycoord.dec < -35. * u.deg) or
@@ -150,8 +151,8 @@ class TelescopeStateMachine(Machine):
                              360. * u.deg - dangle)
             axis_slew_times.append(slew_time(axis[:4], angle * u.deg))
 
-        net_slew_time = np.max([st.value for st in axis_slew_times]) *\
-            axis_slew_times[0].unit
+        net_slew_time = np.max([st.value for st in axis_slew_times]) * \
+                        axis_slew_times[0].unit
 
         # update the time
         self.current_time += net_slew_time
@@ -211,8 +212,8 @@ class PTFObservabilityDB(object):
         boolean if nobs > nobs_min
         """
 
-        assert((year >= 2009) and (year <= 2015))
-        assert((nobs_min > 0))
+        assert ((year >= 2009) and (year <= 2015))
+        assert ((nobs_min > 0))
 
         block = block_index(time, time_block_size=TIME_BLOCK_SIZE)
 

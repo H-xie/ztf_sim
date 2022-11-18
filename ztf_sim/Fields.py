@@ -33,12 +33,11 @@ class Fields(object):
         Expects field_id, ra (deg), dec (deg) columns"""
 
         df = pd.read_csv(field_filename,
-            names=['field_id','ra','dec','ebv','l','b',
-                'ecliptic_lon', 'ecliptic_lat', 'number'],
-            sep='\s+',usecols=['field_id','ra','dec', 'l','b', 
-                'ecliptic_lon', 'ecliptic_lat'],index_col='field_id',
-            skiprows=1)
-
+                         names=['field_id', 'ra', 'dec', 'ebv', 'l', 'b',
+                                'ecliptic_lon', 'ecliptic_lat', 'number'],
+                         sep='\s+', usecols=['field_id', 'ra', 'dec', 'l', 'b',
+                                             'ecliptic_lon', 'ecliptic_lat'], index_col='field_id',
+                         skiprows=1)
 
         # drop fields below dec of -32 degrees for speed
         # (grid_id = 0 has a row at -31.5)
@@ -46,18 +45,18 @@ class Fields(object):
 
         # label the grid ids
         grid_id_boundaries = \
-            {0: {'min':1,'max':999},
-             1: {'min':1001,'max':1999},
-             2: {'min':2001,'max':2999},
-             3: {'min':3001,'max':3999}}
+            {0: {'min': 1, 'max': 999},
+             1: {'min': 1001, 'max': 1999},
+             2: {'min': 2001, 'max': 2999},
+             3: {'min': 3001, 'max': 3999}}
 
         # intialize with a bad int value
         df['grid_id'] = 99
 
         for grid_id, bounds in list(grid_id_boundaries.items()):
-            w = (df.index >= bounds['min']) &  \
-                    (df.index <= bounds['max'])
-            df.loc[w,'grid_id'] = grid_id
+            w = (df.index >= bounds['min']) & \
+                (df.index <= bounds['max'])
+            df.loc[w, 'grid_id'] = grid_id
 
         self.fields = df
         self.field_coords = self._field_coords()
@@ -125,15 +124,15 @@ class Fields(object):
             df_az.name = 'azimuth'
             df = df.join(df_az, on='field_id')
             # for observability considerations it's sufficient to use one band
-            fid=2
+            fid = 2
             df_limmag, df_sky = \
-                compute_limiting_mag(df, ti, self.Sky, filter_id = fid)
+                compute_limiting_mag(df, ti, self.Sky, filter_id=fid)
             lim_mags[bi] = df_limmag
 
         df_lim = pd.DataFrame(lim_mags)
 
         observable_hours = (df_lim > 0).sum(axis=1) * \
-            (TIME_BLOCK_SIZE.to(u.hour))
+                           (TIME_BLOCK_SIZE.to(u.hour))
         observable_hours.name = 'observable_hours'
         self.observable_hours = observable_hours
         self._current_observable_hours_night_mjd = block_night
@@ -211,7 +210,7 @@ class Fields(object):
 
         if observable_hours_range is not None:
             # check that we've computed observable_hours
-            assert(self.observable_hours is not None)
+            assert (self.observable_hours is not None)
             fields = self.fields.join(self.observable_hours)
         else:
             fields = self.fields
@@ -219,19 +218,19 @@ class Fields(object):
         range_keys = ['ra', 'dec', 'l', 'b', 'ecliptic_lon', 'ecliptic_lat',
                       'observable_hours']
 
-        assert((b_range is None) or (abs_b_range is None))
+        assert ((b_range is None) or (abs_b_range is None))
 
         for i, arg in enumerate([ra_range, dec_range, l_range, b_range,
                                  ecliptic_lon_range, ecliptic_lat_range,
                                  observable_hours_range]):
             if arg is not None:
                 cuts = cuts & (fields[range_keys[i]] >= arg[0]) & \
-                    (fields[range_keys[i]] <= arg[1])
+                       (fields[range_keys[i]] <= arg[1])
 
         # easier cuts for Galactic/Extragalactic
         if abs_b_range is not None:
             cuts = cuts & (np.abs(fields['b']) >= abs_b_range[0]) & \
-                (np.abs(fields['b']) <= abs_b_range[1])
+                   (np.abs(fields['b']) <= abs_b_range[1])
 
         scalar_keys = ['grid_id']
 

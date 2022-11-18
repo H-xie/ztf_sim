@@ -1,12 +1,12 @@
 """Constants."""
 
-import os
 import inspect
-import numpy as np
-from astropy.time import Time
+import os
+
+import astroplan
 import astropy.coordinates as coords
 import astropy.units as u
-import astroplan
+import numpy as np
 
 BASE_DIR = os.path.dirname(os.path.abspath(inspect.getfile(
     inspect.currentframe()))) + '/'

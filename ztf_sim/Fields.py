@@ -1,17 +1,10 @@
 """Routines for working with the ZTF discrete field grid"""
 
-import numpy as np
-import pandas as pd
-import astropy.coordinates as coord
-import astropy.units as u
-from astropy.time import Time
-from collections import defaultdict
-import itertools
-from .utils import *
 from .SkyBrightness import SkyBrightness
-from .constants import BASE_DIR, P48_loc, P48_slew_pars, PROGRAM_IDS, FILTER_IDS
-from .constants import TIME_BLOCK_SIZE, MAX_AIRMASS, EXPOSURE_TIME, READOUT_TIME
+from .constants import BASE_DIR, P48_loc, P48_slew_pars
+from .constants import TIME_BLOCK_SIZE, MAX_AIRMASS, READOUT_TIME
 from .constants import slew_time
+from .utils import *
 
 
 class Fields(object):

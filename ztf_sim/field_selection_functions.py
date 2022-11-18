@@ -11,12 +11,13 @@ Note that any cadence cuts should occur within the functions defined here--the c
 """
 
 import logging
-import numpy as np
+
 import astropy.units as u
+import numpy as np
 from astropy.time import Time
-from .field_selection.srg import get_srg_fields
-from .Fields import Fields
+
 from .constants import PROGRAM_NAME_TO_ID, P48_Observer
+from .field_selection.srg import get_srg_fields
 from .utils import RA_to_HA
 
 logger = logging.getLogger(__name__)

@@ -1,22 +1,22 @@
 """Routines for running the scheduler in simulation mode."""
 
-import os.path
 import configparser
 import logging
-import numpy as np
-import astropy.coordinates as coord
-from astropy.time import Time
-import astropy.units as u
-from .TelescopeStateMachine import TelescopeStateMachine
-from .Scheduler import Scheduler
-from .QueueManager import GreedyQueueManager, QueueEmptyError
-from .QueueManager import calc_pool_stats, calc_queue_stats
-from .configuration import SchedulerConfiguration, QueueConfiguration
-from .constants import BASE_DIR, P48_loc
-from .utils import block_index
+import os.path
 
+import astropy.coordinates as coord
+import astropy.units as u
+import numpy as np
 # check aggressively for setting with copy
 import pandas as pd
+from astropy.time import Time
+
+from .QueueManager import GreedyQueueManager, QueueEmptyError
+from .QueueManager import calc_pool_stats, calc_queue_stats
+from .Scheduler import Scheduler
+from .TelescopeStateMachine import TelescopeStateMachine
+from .configuration import QueueConfiguration
+from .constants import BASE_DIR, P48_loc
 
 pd.options.mode.chained_assignment = 'raise'  # default='warn'
 

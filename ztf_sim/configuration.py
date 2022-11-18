@@ -1,13 +1,12 @@
 """Classes for parsing scheduler configuration files."""
 
-import pathlib
 import json
-import numpy as np
-import astropy.units as u
-from .ObservingProgram import ObservingProgram
+import pathlib
+
 from .Fields import Fields
-from .constants import PROGRAM_NAMES, PROGRAM_NAME_TO_ID, EXPOSURE_TIME, TIME_BLOCK_SIZE
-from .QueueManager import GreedyQueueManager, QueueEmptyError, GurobiQueueManager, ListQueueManager
+from .ObservingProgram import ObservingProgram
+from .QueueManager import GreedyQueueManager, GurobiQueueManager, ListQueueManager
+from .constants import PROGRAM_NAMES, EXPOSURE_TIME, TIME_BLOCK_SIZE
 from .field_selection_functions import *
 
 

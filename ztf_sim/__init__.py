@@ -1,4 +1,5 @@
-from .constants import *
+import logging
+
 from .Fields import *
 from .ObsLogger import *
 from .ObservingProgram import *
@@ -7,11 +8,11 @@ from .SkyBrightness import *
 from .TelescopeStateMachine import *
 from .cadence import *
 from .configuration import *
+from .constants import *
 from .field_selection_functions import *
 from .magnitudes import *
 from .simulate import *
 from .utils import *
-import logging
 
 set()
 

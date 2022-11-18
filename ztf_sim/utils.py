@@ -1,13 +1,15 @@
 """Utility routines."""
 
+from datetime import datetime
+
+import astroplan
+import astropy.coordinates as coord
+import astropy.units as u
 import numpy as np
 import pandas as pd
 from astropy.time import Time
-import astropy.coordinates as coord
-import astropy.units as u
-import astroplan
 from sqlalchemy import create_engine
-from datetime import datetime
+
 from .constants import BASE_DIR, P48_loc, P48_Observer, TIME_BLOCK_SIZE
 from .constants import EXPOSURE_TIME, MAX_AIRMASS
 from .magnitudes import limiting_mag

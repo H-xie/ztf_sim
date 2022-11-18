@@ -1,17 +1,16 @@
 """
 @author: yuhanyao
 """
-from glob import glob
-import os
 import logging
-import astropy.constants as const
+from glob import glob
+
 import numpy as np
 import pandas as pd
 from astropy import units as u
 from astropy.coordinates import SkyCoord
-from astropy.time import Time
 from astropy.coordinates import get_sun
-from ..Fields import Fields
+from astropy.time import Time
+
 from ..constants import BASE_DIR
 
 logger = logging.getLogger(__name__)

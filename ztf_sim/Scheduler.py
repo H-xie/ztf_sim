@@ -1,12 +1,13 @@
 """Core scheduler classes."""
 
 import configparser
-from collections import defaultdict
 import logging
+from collections import defaultdict
+
+import astropy.units as u
 import numpy as np
 from astropy.time import Time
-import astropy.units as u
-from .QueueManager import ListQueueManager, GreedyQueueManager, GurobiQueueManager
+
 from .ObsLogger import ObsLogger
 from .configuration import SchedulerConfiguration
 from .constants import BASE_DIR, PROGRAM_IDS, EXPOSURE_TIME, READOUT_TIME

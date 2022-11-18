@@ -1,18 +1,14 @@
 """Code for logging observations to a sqlite database."""
 
 import os.path
-from collections import defaultdict
 import uuid
-import numpy as np
-import pandas as pd
-from sqlalchemy import create_engine
-import astropy.coordinates as coord
-from astropy.time import Time
-import astropy.units as u
+from collections import defaultdict
+
 import astroplan.moon
+
 from .Fields import Fields
-from .utils import *
 from .constants import BASE_DIR, FILTER_ID_TO_NAME, EXPOSURE_TIME, READOUT_TIME
+from .utils import *
 
 
 class ObsLogger(object):

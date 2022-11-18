@@ -1,14 +1,12 @@
 """State machine for simulating observations."""
 
-from transitions import Machine
-from astropy.time import Time
-import numpy as np
-import astropy.units as u
-import astropy.coordinates as coord
 import logging
-from .utils import *
-from .constants import BASE_DIR, P48_loc, FILTER_IDS
+
+from transitions import Machine
+
+from .constants import P48_loc, FILTER_IDS
 from .constants import READOUT_TIME, EXPOSURE_TIME, FILTER_CHANGE_TIME, slew_time
+from .utils import *
 
 
 class TelescopeStateMachine(Machine):

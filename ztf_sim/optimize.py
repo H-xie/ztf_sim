@@ -1,16 +1,14 @@
 """Implementation of core scheduling algorithms using Gurobi."""
 
-import logging
-import os
 from collections import defaultdict
-from gurobipy import *
-import numpy as np
-import shelve
+
 import astropy.units as u
+import numpy as np
 import pandas as pd
-from collections import defaultdict
-from .constants import TIME_BLOCK_SIZE, EXPOSURE_TIME, READOUT_TIME, FILTER_CHANGE_TIME
+from gurobipy import *
+
 from .constants import PROGRAM_NAME_TO_ID
+from .constants import TIME_BLOCK_SIZE, EXPOSURE_TIME, READOUT_TIME, FILTER_CHANGE_TIME
 
 max_exps_per_slot = np.ceil((TIME_BLOCK_SIZE /
                              (EXPOSURE_TIME + READOUT_TIME)).to(

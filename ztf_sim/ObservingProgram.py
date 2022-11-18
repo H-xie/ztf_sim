@@ -1,11 +1,6 @@
 """Classes implementing Observing Programs."""
 
-import logging
-import numpy as np
-import astropy.units as u
-from astropy.time import Time
 from .constants import EXPOSURE_TIME, READOUT_TIME, TIME_BLOCK_SIZE
-from .utils import approx_hours_of_darkness
 from .field_selection_functions import *
 
 

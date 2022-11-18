@@ -1,10 +1,9 @@
 """Functions defining cadence windows.  Return True if the field can
 be observed at the supplied time."""
 
-import pandas as pd
-import numpy as np
 import astropy.units as u
-from .constants import FILTER_IDS, TIME_BLOCK_SIZE
+import numpy as np
+import pandas as pd
 
 
 def no_cadence(*args):

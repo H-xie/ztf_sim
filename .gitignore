@@ -75,3 +75,6 @@ target/
 # Misc
 .DS_Store
 .*.swp
+
+# PyCharm
+.idea
